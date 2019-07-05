@@ -1,2 +1,2 @@
-# classification_exercises
-Machine learning classification exercises
+# HandsOn-ML-Exercises
+Hands-On Machine learning book exercises
