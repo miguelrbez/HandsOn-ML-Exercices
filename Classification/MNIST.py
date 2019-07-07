@@ -117,7 +117,51 @@ def plot_roc_curve(digit, thresholds=[0, 0.5]):
 # plot_roc_curve(4)
 
 
+# Predict y_train for SGD and Random forest classifiers
+y_pred_sgd = cross_val_predict(sgd_clf, X_train_scaled, y_train, cv=3)
+y_pred_forest = cross_val_predict(forest_clf, X_train_scaled, y_train, cv=3)
 
-# Fit classification models with cross-validation
+
+# Plot normalized confusion matrix of classifier model
+from sklearn.metrics import confusion_matrix
+def plot_confusion_matrix(y_true, y_pred, title=None):
+    conf_mx = confusion_matrix(y_true, y_pred)
+    norm_conf_mx = conf_mx / conf_mx.sum(axis=1, keepdims=True)
+    np.fill_diagonal(norm_conf_mx, 0)
+    plt.matshow(norm_conf_mx, cmap=plt.cm.gray)
+    if title:
+        plt.title(title)
+    plt.show()
+
+# plot_confusion_matrix(y_train, y_pred_sgd, "SGD")
+# plot_confusion_matrix(y_train, y_pred_forest, "Forest")
+
+
+# Print cross-validate precision, recall and F1 score for classifier
+from sklearn.model_selection import cross_validate
+def print_precision_recall_f1_score(clf, title=None):
+    scoring = ["precision_macro", "recall_macro", "f1_macro"]
+    scores = cross_validate(clf, X_train_scaled, y_train,
+                            cv=3, scoring=scoring)
+    test_precision = np.mean(scores["test_precision_macro"])
+    test_recall = np.mean(scores["test_recall_macro"])
+    test_f1 = np.mean(scores["test_f1_macro"])
+    if title:
+        print(title)
+    print(f"Precision = {test_precision:.4f}")
+    print(f"Recall = {test_recall:.4f}")
+    print(f"F1 score = {test_f1:.4f}")
+
+# print_precision_recall_f1_score(sgd_clf, "SGD")
+# print_precision_recall_f1_score(forest_clf, "Random forest")
+# # SGD
+# # Precision = 0.9085
+# # Recall = 0.9083
+# # F1 score = 0.9082
+# # Random forest
+# # Precision = 0.9410
+# # Recall = 0.9407
+# # F1 score = 0.9407
+
 
 print("Finished running")
