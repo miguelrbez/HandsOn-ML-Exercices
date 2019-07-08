@@ -169,24 +169,41 @@ def print_precision_recall_f1_score(clf, title=None):
 # Use grid search to find best max_features value for Random forest classifier and save a DataFrame with the results
 from sklearn.model_selection import GridSearchCV
 
-def hyper_parameter_tuning(clf, param_grid, scoring, refit=True, df_path):
-    grid_search = GridSearchCV(clf, param_grid, scoring,
-                                      cv=3, refit=refit)
+def hyper_parameter_tuning(clf, param_grid, scoring, df_path, refit_parameter=None):
+    if refit_parameter:
+        grid_search = GridSearchCV(clf, param_grid, scoring,
+                               cv=3, refit=refit_parameter)
+    else:
+        grid_search = GridSearchCV(clf, param_grid, scoring,
+                                   cv=3)
     grid_search.fit(X_train_scaled, y_train)
     results_grid_search = pd.DataFrame(grid_search.cv_results_)
     results_grid_search.to_pickle(df_path)
-    return grid_search.best_estimator_
+    return grid_search.best_estimator_, results_grid_search
 
 def grid_search_forest_max_features():
     clf_forest = RandomForestClassifier(random_state=42)
     param_grid_forest = {"max_features": ["auto", 0.8, "log2", None]}
     scoring = ["precision_macro", "recall_macro", "f1_macro"]
     df_path = "./DataFrames/MNIST_forest_max_features_grid_search.pkl"
-    return hyper_parameter_tuning(clf_forest, param_grid_forest, scoring, refit="precision_macro",
-                           df_path)
+    return hyper_parameter_tuning(clf_forest, param_grid_forest, scoring, df_path,
+                                  "precision_macro")
 
-# forest_clf_best = grid_search_forest_max_features()
+def grid_search_forest_n_estimators():
+    clf_forest = RandomForestClassifier(random_state=42)
+    param_grid_forest = {"n_estimators": [3, 10, 30, 100]}
+    scoring = ["precision_macro", "recall_macro", "f1_macro"]
+    df_path = "./DataFrames/MNIST_forest_n_estimators_grid_search.pkl"
+    return hyper_parameter_tuning(clf_forest, param_grid_forest, scoring, df_path,
+                                  "precision_macro")
+
+# forest_clf_best, _ = grid_search_forest_max_features()
 # Best max_features = 'auto'
-
+forest_clf_best, _ = grid_search_forest_n_estimators()
+# Best n_estimators = 100
+# print_precision_recall_f1_score(forest_clf_best)
+# Precision = 0.9659
+# Recall = 0.9658
+# F1 score = 0.9658
 
 print("Finished running")
