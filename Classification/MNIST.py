@@ -1,4 +1,6 @@
+import os
 import numpy as np
+import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
 
@@ -118,8 +120,8 @@ def plot_roc_curve(digit, thresholds=[0, 0.5]):
 
 
 # Predict y_train for SGD and Random forest classifiers
-y_pred_sgd = cross_val_predict(sgd_clf, X_train_scaled, y_train, cv=3)
-y_pred_forest = cross_val_predict(forest_clf, X_train_scaled, y_train, cv=3)
+# y_pred_sgd = cross_val_predict(sgd_clf, X_train_scaled, y_train, cv=3)
+# y_pred_forest = cross_val_predict(forest_clf, X_train_scaled, y_train, cv=3)
 
 
 # Plot normalized confusion matrix of classifier model
@@ -162,6 +164,29 @@ def print_precision_recall_f1_score(clf, title=None):
 # # Precision = 0.9410
 # # Recall = 0.9407
 # # F1 score = 0.9407
+
+
+# Use grid search to find best max_features value for Random forest classifier and save a DataFrame with the results
+from sklearn.model_selection import GridSearchCV
+
+def hyper_parameter_tuning(clf, param_grid, scoring, refit=True, df_path):
+    grid_search = GridSearchCV(clf, param_grid, scoring,
+                                      cv=3, refit=refit)
+    grid_search.fit(X_train_scaled, y_train)
+    results_grid_search = pd.DataFrame(grid_search.cv_results_)
+    results_grid_search.to_pickle(df_path)
+    return grid_search.best_estimator_
+
+def grid_search_forest_max_features():
+    clf_forest = RandomForestClassifier(random_state=42)
+    param_grid_forest = {"max_features": ["auto", 0.8, "log2", None]}
+    scoring = ["precision_macro", "recall_macro", "f1_macro"]
+    df_path = "./DataFrames/MNIST_forest_max_features_grid_search.pkl"
+    return hyper_parameter_tuning(clf_forest, param_grid_forest, scoring, refit="precision_macro",
+                           df_path)
+
+# forest_clf_best = grid_search_forest_max_features()
+# Best max_features = 'auto'
 
 
 print("Finished running")
