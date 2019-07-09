@@ -199,11 +199,36 @@ def grid_search_forest_n_estimators():
 
 # forest_clf_best, _ = grid_search_forest_max_features()
 # Best max_features = 'auto'
-forest_clf_best, _ = grid_search_forest_n_estimators()
+# forest_clf_best, _ = grid_search_forest_n_estimators()
 # Best n_estimators = 100
 # print_precision_recall_f1_score(forest_clf_best)
 # Precision = 0.9659
 # Recall = 0.9658
 # F1 score = 0.9658
+
+
+# Expand the training set by shifting each sample image by one pixel in each direction
+from scipy.ndimage import shift
+
+# Shift the image of one sample and returns new image as 1-D array
+def shift_sample_image(sample, direction):
+    image = sample.reshape(28, 28)
+    image_shifted = shift(image, direction)
+    return image_shifted.reshape(-1)
+
+# Expand set by adding 4 new samples for each sample using shifting function
+def expand_set_by_shifting_images(X, y):
+    directions = [[1, 0], [-1, 0], [0, 1], [0, -1]]
+    X_expanded = X
+    y_expanded = y
+    for i in range(len(y)):
+        for direction in directions:
+            sample_shifted = shift_sample_image(X[i], direction)
+            X_expanded = np.append(X_expanded, [sample_shifted], axis=0)
+            y_expanded = np.append(y_expanded, y[i])
+    return X_expanded, y_expanded
+
+# X_train_expanded, y_train_expanded = expand_set_by_shifting_images(X_train, y_train)
+
 
 print("Finished running")
